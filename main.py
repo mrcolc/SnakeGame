@@ -14,7 +14,7 @@ difficulty = 25
 # Initialise game window
 pygame.init()
 pygame.display.set_caption('Snake Eater')
-game_window = pygame.display.set_mode((frame_size_x, frame_size_y))
+game_window = pygame.display.set_mode((frame_size_x + 150, frame_size_y))
 
 # Colors (R, G, B)
 black = pygame.Color(0, 0, 0)
@@ -44,9 +44,9 @@ def main():
         snake.move()
         food_eaten = snake.grow(grid.food_pos)
         if food_eaten:
-            grid.spawn_food()
+            grid.spawn_food(snake.snake_body)
 
-        grid.draw(game_window, snake.snake_body, snake.snake_pos)
+        grid.draw(game_window, snake.snake_body, snake.direction)
 
         if grid.check_collision(snake.snake_pos) or grid.check_self_collision(snake.snake_body):
             game_over()
