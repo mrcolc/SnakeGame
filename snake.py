@@ -7,6 +7,7 @@ class Snake:
         self.snake_body = [[100, 50], [100 - 10, 50], [100 - (2 * 10), 50]]
         self.direction = 'RIGHT'
         self.change_to = self.direction
+        self.snake_score = 0
 
     def change_direction(self, event):
         if event.key == pygame.K_UP or event.key == ord('w'):
