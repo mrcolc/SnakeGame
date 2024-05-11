@@ -19,7 +19,7 @@ black = pygame.Color(0, 0, 0)
 white = pygame.Color(255, 255, 255)
 red = pygame.Color(255, 0, 0)
 green = pygame.Color(0, 255, 0)
-buttonColor = pygame.Color(250,72,83)
+
 
 # FPS (frames per second) controller
 fps_controller = pygame.time.Clock()
