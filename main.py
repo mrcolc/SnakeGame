@@ -45,6 +45,7 @@ def main():
         food_eaten = snake.grow(grid.food_pos)
         if food_eaten:
             grid.spawn_food(snake.snake_body)
+            grid.increase_score()
 
         grid.draw(game_window, snake.snake_body, snake.direction)
 
