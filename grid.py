@@ -10,6 +10,7 @@ food = pygame.image.load(os.path.join(current_dir, "lib", "food.png"))
 bomb = pygame.image.load(os.path.join(current_dir, "lib", "bomb.png"))
 snakes_head = pygame.image.load(os.path.join(current_dir, "lib", "snake_head.png"))
 snakes_body = pygame.image.load(os.path.join(current_dir, "lib", "snake_body.png"))
+wall_image = pygame.image.load(os.path.join(current_dir, "lib", "wall_image.png"))
 
 class Grid:
     def __init__(self, frame_size_x, frame_size_y):
@@ -18,11 +19,23 @@ class Grid:
         self.food_pos = [random.randrange(10, (frame_size_x // 10) - 1) * 10,
                          random.randrange(10, (frame_size_y // 10) - 1) * 10]
         self.bomb_pos = [-1, -1]
+        self.wall_positions = []
+        while len(self.wall_positions) < 10:
+            x = random.randrange(10, (frame_size_x // 10) - 1) * 10
+            y = random.randrange(10, (frame_size_y // 10) - 1) * 10
+            # Check if there is a wall already in this position or within a 10-pixel gap
+            if all(abs(x - w[0]) > 10 or abs(y - w[1]) > 10 for w in self.wall_positions):
+                self.wall_positions.append((x, y))
+
 
     def spawn_food(self, snake_body):
         self.food_pos = [random.randrange(10, (self.frame_size_x // 10) - 1) * 10,
                          random.randrange(10, (self.frame_size_y // 10) - 1) * 10]
-
+        
+        for pos in self.wall_positions:
+            if self.food_pos[0] == pos[0] and self.food_pos[1] == pos[1]:
+                self.spawn_food(snake_body)
+                
         for pos in snake_body:
             if self.food_pos[0] == pos[0] and self.food_pos[1] == pos[1]:
                 self.spawn_food(snake_body)
@@ -31,6 +44,10 @@ class Grid:
         self.bomb_pos = [random.randrange(10, (self.frame_size_x // 10) - 1) * 10,
                          random.randrange(10, (self.frame_size_y // 10) - 1) * 10]
 
+        for pos in self.wall_positions:
+            if self.bomb_pos[0] == pos[0] and self.bomb_pos[1] == pos[1]:
+                self.spawn_bomb(snake_body)
+                
         for pos in snake_body:
             if self.bomb_pos[0] == pos[0] and self.bomb_pos[1] == pos[1]:
                 self.spawn_bomb(snake_body)
@@ -40,6 +57,9 @@ class Grid:
 
     def draw(self, game_window, snake_body, snake_direction, snake_score):
         game_window.blit(background, (0, 0))
+        for pos in self.wall_positions:
+            game_window.blit(wall_image, (pos[0], pos[1]))
+            
         game_window.blit(right_panel, (720, 0))
         game_window.blit(food, (self.food_pos[0], self.food_pos[1]))
         if self.bomb_pos[0] != -1 and self.bomb_pos[1] != -1:
@@ -68,6 +88,9 @@ class Grid:
                 game_window.blit(snakes_body, (pos[0], pos[1]))
 
     def check_collision(self, snake_pos):
+        for pos in self.wall_positions:
+            if snake_pos[0] == pos[0] and snake_pos[1] == pos[1]:
+                return True
         return (snake_pos[0] < 10 or snake_pos[0] > self.frame_size_x - 20 or
                 snake_pos[1] < 10 or snake_pos[1] > self.frame_size_y - 20)
 
