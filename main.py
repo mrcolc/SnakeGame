@@ -15,7 +15,7 @@ mixer.music.load("song.mp3")
 mixer.music.set_volume(0.05)
   
 # Start playing the song 
-mixer.music.play() 
+mixer.music.play(loops = -1) 
   
 
 # loading photos at the start
