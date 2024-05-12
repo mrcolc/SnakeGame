@@ -1,25 +1,29 @@
 import pygame
 import sys
 import os
+import random
 from snake import Snake
 from grid import Grid
-from pygame import mixer 
-  
+from pygame import mixer
+
 # Starting the mixer 
-mixer.init() 
-  
+mixer.init()
+current_dir = os.path.dirname(os.path.realpath(__file__))
+
+playlist = ["song1.mp3", "song2.mp3", "song3.mp3"]
+
+first_song = playlist[random.randint(0, len(playlist) - 1)]
+
+MUSIC_END = pygame.USEREVENT + 1
 # Loading the song 
-mixer.music.load("song.mp3") 
-  
+mixer.music.load(os.path.join(current_dir, "lib", first_song))
+
 # Setting the volume 
-mixer.music.set_volume(0.05)
-  
+mixer.music.set_volume(0.02)
 # Start playing the song 
-mixer.music.play(loops = -1) 
-  
+mixer.music.play()
 
 # loading photos at the start
-current_dir = os.path.dirname(os.path.realpath(__file__))
 main_menu = pygame.image.load(os.path.join(current_dir, 'lib', 'main_menu.png'))
 play_button = pygame.image.load(os.path.join(current_dir, 'lib', 'play_button.png'))
 ai_driven_button = pygame.image.load(os.path.join(current_dir, 'lib', 'ai_driven_button.png'))
@@ -53,6 +57,14 @@ fps_controller = pygame.time.Clock()
 def game_over():
     pygame.quit()
     sys.exit()
+
+
+def start_playlist():
+    song_to_play = playlist[random.randint(0, len(playlist) - 1)]
+    if song_to_play == first_song:
+        start_playlist()
+    pygame.mixer.music.load(os.path.join(current_dir, 'lib', song_to_play))
+    pygame.mixer.music.play()
 
 
 def show_menu():
@@ -170,7 +182,10 @@ def main():
                 game_over()
             elif event.type == pygame.KEYDOWN:
                 snake.change_direction(event)
+            if event.type == MUSIC_END:
+                start_playlist()
 
+        pygame.mixer.music.set_endevent(MUSIC_END)
         snake.move()
         food_eaten = snake.grow(grid.food_pos)
         if food_eaten:
