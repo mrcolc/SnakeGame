@@ -12,7 +12,7 @@ mixer.init()
 mixer.music.load("song.mp3") 
   
 # Setting the volume 
-mixer.music.set_volume(0.7) 
+mixer.music.set_volume(0.05)
   
 # Start playing the song 
 mixer.music.play() 
