@@ -34,6 +34,8 @@ difficulty_menu_img = pygame.image.load(os.path.join(current_dir, 'lib', 'diffic
 easy_button = pygame.image.load(os.path.join(current_dir, 'lib', 'easy_button.png'))
 medium_button = pygame.image.load(os.path.join(current_dir, 'lib', 'medium_button.png'))
 hard_button = pygame.image.load(os.path.join(current_dir, 'lib', 'hard_button.png'))
+blink_button = pygame.image.load(os.path.join(current_dir, 'lib', 'blink_button.png'))
+
 
 # Window size
 frame_size_x = 720
@@ -130,7 +132,57 @@ def game_over_menu(snake):
                     finish_game = True
         fps_controller.tick(30)
 
+def pause_menu():
+    global is_paused
+    is_paused = False
+    
+    button_width = 200
+    button_height = 50
+    resume_button_x = 335
+    resume_button_y = 250
+    main_menu_button_x = 335
+    main_menu_button_y = 320
+    quit_button_x = 335
+    quit_button_y = 390
+    
+    font = pygame.font.Font('freesansbold.ttf', 30)
+    resume_text = font.render("Resume", True, black)
+    main_menu_text = font.render("Main Menu", True, black)
+    quit_text = font.render("Quit", True, black)
 
+    game_window.blit(main_menu, (0, 0))
+
+    game_window.blit(blink_button, (resume_button_x, resume_button_y))
+    game_window.blit(resume_text, (resume_button_x + button_width // 2 - resume_text.get_width() // 2, resume_button_y + button_height // 2 - resume_text.get_height() // 2))
+    
+    game_window.blit(blink_button, (main_menu_button_x, main_menu_button_y))
+    game_window.blit(main_menu_text, (main_menu_button_x + button_width // 2 - main_menu_text.get_width() // 2, main_menu_button_y + button_height // 2 - main_menu_text.get_height() // 2))
+    
+    game_window.blit(blink_button, (quit_button_x, quit_button_y))
+    game_window.blit(quit_text, (quit_button_x + button_width // 2 - quit_text.get_width() // 2, quit_button_y + button_height // 2 - quit_text.get_height() // 2))
+
+    pygame.display.update()
+
+    start_game = False
+    while not start_game:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+            elif event.type == pygame.MOUSEBUTTONDOWN:
+                mouse_x, mouse_y = pygame.mouse.get_pos()
+                if resume_button_x <= mouse_x <= resume_button_x + button_width and resume_button_y <= mouse_y <= resume_button_y + button_height:
+                    return
+                    
+                elif main_menu_button_x <= mouse_x <= main_menu_button_x + button_width and main_menu_button_y <= mouse_y <= main_menu_button_y + button_height:
+                    main()
+                    
+                elif quit_button_x <= mouse_x <= quit_button_x + button_width and quit_button_y <= mouse_y <= quit_button_y + button_height:
+                    pygame.quit()
+                    sys.exit()
+                    
+        fps_controller.tick(30)
+        
 def difficulty_menu():
     global difficulty
 
@@ -176,15 +228,22 @@ def main():
     snake = Snake()
     grid = Grid(frame_size_x, frame_size_y)
     value_to_spawn_bomb = 5
+    is_paused = False
     while True:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 game_over()
             elif event.type == pygame.KEYDOWN:
                 snake.change_direction(event)
+                if event.key == pygame.K_p:  # Check if 'P' key is pressed
+                    is_paused = True
+                    if is_paused:
+                        pause_menu()
+                        is_paused = False
             if event.type == MUSIC_END:
                 start_playlist()
-
+        if is_paused:
+            continue
         pygame.mixer.music.set_endevent(MUSIC_END)
         snake.move()
         food_eaten = snake.grow(grid.food_pos)
