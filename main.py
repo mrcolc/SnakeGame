@@ -25,15 +25,8 @@ mixer.music.play()
 
 # loading photos at the start
 main_menu = pygame.image.load(os.path.join(current_dir, 'lib', 'main_menu.png'))
-play_button = pygame.image.load(os.path.join(current_dir, 'lib', 'play_button.png'))
-ai_driven_button = pygame.image.load(os.path.join(current_dir, 'lib', 'ai_driven_button.png'))
 game_over_menu_img = pygame.image.load(os.path.join(current_dir, 'lib', 'game_over_menu.png'))
-to_main_menu_button = pygame.image.load(os.path.join(current_dir, 'lib', 'to_main_menu_button.png'))
-quit_button = pygame.image.load(os.path.join(current_dir, 'lib', 'quit_button.png'))
 difficulty_menu_img = pygame.image.load(os.path.join(current_dir, 'lib', 'difficulty_menu_img.png'))
-easy_button = pygame.image.load(os.path.join(current_dir, 'lib', 'easy_button.png'))
-medium_button = pygame.image.load(os.path.join(current_dir, 'lib', 'medium_button.png'))
-hard_button = pygame.image.load(os.path.join(current_dir, 'lib', 'hard_button.png'))
 blink_button = pygame.image.load(os.path.join(current_dir, 'lib', 'blink_button.png'))
 
 
@@ -76,11 +69,20 @@ def show_menu():
     play_button_y = 250
     aiDriven_button_x = 335
     aiDriven_button_y = 320
+    
+    font = pygame.font.Font('freesansbold.ttf', 30)
+    play_text = font.render("Play", True, black)
+    ai_driven_text = font.render("AI Driven", True, black)
+    
 
     game_window.blit(main_menu, (0, 0))
 
-    game_window.blit(play_button, (play_button_x, play_button_y))
-    game_window.blit(ai_driven_button, (aiDriven_button_x, aiDriven_button_y))
+    game_window.blit(blink_button, (play_button_x, play_button_y))
+    game_window.blit(play_text, (play_button_x + button_width // 2 - play_text.get_width() // 2, play_button_y + button_height // 2 - play_text.get_height() // 2))
+
+    game_window.blit(blink_button, (aiDriven_button_x, aiDriven_button_y))
+    game_window.blit(ai_driven_text, (aiDriven_button_x + button_width // 2 - ai_driven_text.get_width() // 2, aiDriven_button_y + button_height // 2 - ai_driven_text.get_height() // 2))
+
     pygame.display.update()
 
     start_game = False
@@ -110,12 +112,21 @@ def game_over_menu(snake):
     game_window.blit(game_over_menu_img, (0, 0))
 
     font = pygame.font.Font('freesansbold.ttf', 30)
-    text = font.render("Score: " + str(snake.snake_score), True, (255, 255, 255))  # str(snake_score)
+    text = font.render("Score: " + str(snake.snake_score), True, white)  # str(snake_score)
+    main_menu_text = font.render("Main Menu", True, black)
+    quit_text = font.render("Quit", True, black)
+    
     game_window.blit(text, (score_text_x, score_text_y))
 
-    game_window.blit(text, (score_text_x, score_text_y))
-    game_window.blit(to_main_menu_button, (main_menu_button_x, main_menu_button_y))
-    game_window.blit(quit_button, (quit_button_x, quit_button_y))
+    
+    
+    game_window.blit(blink_button, (main_menu_button_x, main_menu_button_y))
+    game_window.blit(main_menu_text, (main_menu_button_x + button_width // 2 - main_menu_text.get_width() // 2, main_menu_button_y + button_height // 2 - main_menu_text.get_height() // 2))
+
+    game_window.blit(blink_button, (quit_button_x, quit_button_y))
+    game_window.blit(quit_text, (quit_button_x + button_width // 2 - quit_text.get_width() // 2, quit_button_y + button_height // 2 - quit_text.get_height() // 2))
+
+    
     pygame.display.update()
 
     finish_game = False
@@ -188,18 +199,34 @@ def difficulty_menu():
 
     button_width = 200
     button_height = 50
+    choose_difficulty_x = 290
+    choose_difficulty_y = 200
     easy_button_x = 335
     easy_button_y = 250
     normal_button_x = 335
     normal_button_y = 320
     hard_button_x = 335
     hard_button_y = 390
+    
+    font = pygame.font.Font('freesansbold.ttf', 30)
+    easy_text = font.render("Easy", True, black)
+    medium_text = font.render("Medium", True, black)
+    hard_text = font.render("Hard", True, black)
+    choose_difficulty_text = font.render("Choose a difficulty", True, white)
 
-    game_window.blit(difficulty_menu_img, (0, 0))
+    game_window.blit(main_menu, (0, 0))
+    
+    game_window.blit(choose_difficulty_text, (choose_difficulty_x, choose_difficulty_y))
 
-    game_window.blit(easy_button, (easy_button_x, easy_button_y))
-    game_window.blit(medium_button, (normal_button_x, normal_button_y))
-    game_window.blit(hard_button, (hard_button_x, hard_button_y))
+    game_window.blit(blink_button, (easy_button_x, easy_button_y))
+    game_window.blit(easy_text, (easy_button_x + button_width // 2 - easy_text.get_width() // 2, easy_button_y + button_height // 2 - easy_text.get_height() // 2))
+
+    game_window.blit(blink_button, (normal_button_x, normal_button_y))
+    game_window.blit(medium_text, (normal_button_x + button_width // 2 - medium_text.get_width() // 2, normal_button_y + button_height // 2 - medium_text.get_height() // 2))
+
+    game_window.blit(blink_button, (hard_button_x, hard_button_y))
+    game_window.blit(hard_text, (hard_button_x + button_width // 2 - hard_text.get_width() // 2, hard_button_y + button_height // 2 - hard_text.get_height() // 2))
+
     pygame.display.update()
 
     start_game = False
