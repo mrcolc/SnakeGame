@@ -45,3 +45,11 @@ class Snake:
         else:
             self.snake_body.pop()
             return False
+
+    def shrink(self, bomb_pos):
+        if self.snake_pos[0] == bomb_pos[0] and self.snake_pos[1] == bomb_pos[1]:
+            self.snake_body.pop()
+            self.snake_body.pop()
+            bomb_pos[0], bomb_pos[1] = -1, -1
+            return True
+        return False

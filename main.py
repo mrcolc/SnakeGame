@@ -1,17 +1,29 @@
 import pygame
 import sys
-import random
+import os
 from snake import Snake
 from grid import Grid
+
+# loading photos at the start
+current_dir = os.path.dirname(os.path.realpath(__file__))
+main_menu = pygame.image.load(os.path.join(current_dir, 'lib', 'main_menu.png'))
+play_button = pygame.image.load(os.path.join(current_dir, 'lib', 'play_button.png'))
+ai_driven_button = pygame.image.load(os.path.join(current_dir, 'lib', 'ai_driven_button.png'))
+game_over_menu = pygame.image.load(os.path.join(current_dir, 'lib', 'game_over_menu.png'))
+to_main_menu_button = pygame.image.load(os.path.join(current_dir, 'lib', 'to_main_menu_button.png'))
+quit_button = pygame.image.load(os.path.join(current_dir, 'lib', 'quit_button.png'))
+difficulty_menu_img = pygame.image.load(os.path.join(current_dir, 'lib', 'difficulty_menu_img.png'))
+easy_button = pygame.image.load(os.path.join(current_dir, 'lib', 'easy_button.png'))
+medium_button = pygame.image.load(os.path.join(current_dir, 'lib', 'medium_button.png'))
+hard_button = pygame.image.load(os.path.join(current_dir, 'lib', 'hard_button.png'))
 
 # Window size
 frame_size_x = 720
 frame_size_y = 480
 
-
 # Initialise game window
 pygame.init()
-pygame.display.set_caption('Snake Eater')
+pygame.display.set_caption('Snake Game')
 game_window = pygame.display.set_mode((frame_size_x + 150, frame_size_y))
 
 # Colors (R, G, B)
@@ -19,7 +31,6 @@ black = pygame.Color(0, 0, 0)
 white = pygame.Color(255, 255, 255)
 red = pygame.Color(255, 0, 0)
 green = pygame.Color(0, 255, 0)
-
 
 # FPS (frames per second) controller
 fps_controller = pygame.time.Clock()
@@ -29,6 +40,7 @@ def game_over():
     pygame.quit()
     sys.exit()
 
+
 def show_menu():
     button_width = 200
     button_height = 50
@@ -37,14 +49,10 @@ def show_menu():
     aiDriven_button_x = 335
     aiDriven_button_y = 320
 
-    
-    background_menu = pygame.image.load("main_menu.png")
-    game_window.blit(background_menu, (0,0))
-    
-    play_button = pygame.image.load("play_button.png")
-    aiDriven_button = pygame.image.load("ai_driven.png")
+    game_window.blit(main_menu, (0, 0))
+
     game_window.blit(play_button, (play_button_x, play_button_y))
-    game_window.blit(aiDriven_button, (aiDriven_button_x, aiDriven_button_y))
+    game_window.blit(ai_driven_button, (aiDriven_button_x, aiDriven_button_y))
     pygame.display.update()
 
     start_game = False
@@ -59,9 +67,9 @@ def show_menu():
                     difficulty_menu()
                     start_game = True
         fps_controller.tick(30)
-        
+
+
 def game_over_menu(snake):
-    
     button_width = 200
     button_height = 50
     score_text_x = 375
@@ -70,21 +78,15 @@ def game_over_menu(snake):
     main_menu_button_y = 300
     quit_button_x = 335
     quit_button_y = 370
-    
-    
-    
-    background_menu = pygame.image.load("game_over_menu.png")
-    game_window.blit(background_menu, (0,0))
-    
+
+    game_window.blit(game_over_menu, (0, 0))
+
     font = pygame.font.Font('freesansbold.ttf', 30)
-    text = font.render("Score: "+ str(snake.snake_score), True, (255, 255, 255))      #str(snake_score)  
-    game_window.blit(text, (score_text_x,score_text_y))
-    
-    main_menu_button = pygame.image.load("main_menu_button.png")
-    quit_button = pygame.image.load("quit_button.png")
-    
-    game_window.blit(text, (score_text_x,score_text_y))
-    game_window.blit(main_menu_button, (main_menu_button_x, main_menu_button_y))
+    text = font.render("Score: " + str(snake.snake_score), True, (255, 255, 255))  # str(snake_score)
+    game_window.blit(text, (score_text_x, score_text_y))
+
+    game_window.blit(text, (score_text_x, score_text_y))
+    game_window.blit(to_main_menu_button, (main_menu_button_x, main_menu_button_y))
     game_window.blit(quit_button, (quit_button_x, quit_button_y))
     pygame.display.update()
 
@@ -100,11 +102,12 @@ def game_over_menu(snake):
                     main()
                 elif quit_button_x <= mouse_x <= quit_button_x + button_width and quit_button_y <= mouse_y <= quit_button_y + button_height:
                     finish_game = True
-        fps_controller.tick(30)  
-              
+        fps_controller.tick(30)
+
+
 def difficulty_menu():
     global difficulty
-    
+
     button_width = 200
     button_height = 50
     easy_button_x = 335
@@ -114,15 +117,10 @@ def difficulty_menu():
     hard_button_x = 335
     hard_button_y = 390
 
-    
-    background_menu = pygame.image.load("difficulty_menu.png")
-    game_window.blit(background_menu, (0,0))
-    
-    easy_button = pygame.image.load("easy_button.png")
-    normal_button = pygame.image.load("medium_button.png")
-    hard_button = pygame.image.load("hard_button.png")
+    game_window.blit(difficulty_menu_img, (0, 0))
+
     game_window.blit(easy_button, (easy_button_x, easy_button_y))
-    game_window.blit(normal_button, (normal_button_x, normal_button_y))
+    game_window.blit(medium_button, (normal_button_x, normal_button_y))
     game_window.blit(hard_button, (hard_button_x, hard_button_y))
     pygame.display.update()
 
@@ -144,12 +142,14 @@ def difficulty_menu():
                     start_game = True
                     difficulty = 35
 
-        fps_controller.tick(30)    
+        fps_controller.tick(30)
+
 
 def main():
     show_menu()
     snake = Snake()
     grid = Grid(frame_size_x, frame_size_y)
+    value_to_spawn_bomb = 5
     while True:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -163,11 +163,21 @@ def main():
             grid.spawn_food(snake.snake_body)
             grid.increase_score(snake)
 
-        grid.draw(game_window, snake.snake_body, snake.direction,snake.snake_score)
+        grid.draw(game_window, snake.snake_body, snake.direction, snake.snake_score)
 
         if grid.check_collision(snake.snake_pos) or grid.check_self_collision(snake.snake_body):
             game_over_menu(snake)
             game_over()
+
+        if snake.snake_score == value_to_spawn_bomb:
+            grid.spawn_bomb(snake.snake_body)
+            value_to_spawn_bomb += 5
+
+        if snake.snake_score == value_to_spawn_bomb - 2:
+            grid.bomb_pos[0], grid.bomb_pos[1] = -1, -1
+
+        if snake.shrink(grid.bomb_pos):
+            grid.decrease_score(snake)
 
         pygame.display.update()
         fps_controller.tick(difficulty)
