@@ -2,7 +2,7 @@ import pygame
 import sys
 import os
 import random
-from snake import Snake
+from snake import Snake, Direction
 from grid import Grid
 from pygame import mixer
 
@@ -29,7 +29,6 @@ game_over_menu_img = pygame.image.load(os.path.join(current_dir, 'lib', 'game_ov
 difficulty_menu_img = pygame.image.load(os.path.join(current_dir, 'lib', 'difficulty_menu_img.png'))
 blink_button = pygame.image.load(os.path.join(current_dir, 'lib', 'blink_button.png'))
 
-
 # Window size
 frame_size_x = 720
 frame_size_y = 480
@@ -48,11 +47,9 @@ green = pygame.Color(0, 255, 0)
 # FPS (frames per second) controller
 fps_controller = pygame.time.Clock()
 
-
 def game_over():
     pygame.quit()
     sys.exit()
-
 
 def start_playlist():
     song_to_play = playlist[random.randint(0, len(playlist) - 1)]
@@ -60,7 +57,6 @@ def start_playlist():
         start_playlist()
     pygame.mixer.music.load(os.path.join(current_dir, 'lib', song_to_play))
     pygame.mixer.music.play()
-
 
 def show_menu():
     button_width = 200
@@ -74,7 +70,6 @@ def show_menu():
     play_text = font.render("Play", True, black)
     ai_driven_text = font.render("AI Driven", True, black)
     
-
     game_window.blit(main_menu, (0, 0))
 
     game_window.blit(blink_button, (play_button_x, play_button_y))
@@ -94,10 +89,17 @@ def show_menu():
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 mouse_x, mouse_y = pygame.mouse.get_pos()
                 if play_button_x <= mouse_x <= play_button_x + button_width and play_button_y <= mouse_y <= play_button_y + button_height:
-                    difficulty_menu()
+                    # Mode select (0 for player, 1 for AI)
+                    gamemode = 0
+                    difficulty = difficulty_menu()
+                    start_game = True
+                elif aiDriven_button_x <= mouse_x <= aiDriven_button_x + button_width and aiDriven_button_y <= mouse_y <= aiDriven_button_y + button_height:
+                    # Mode select (0 for player, 1 for AI)
+                    gamemode = 1
+                    difficulty = 25
                     start_game = True
         fps_controller.tick(30)
-
+    return gamemode, difficulty
 
 def game_over_menu(snake):
     button_width = 200
@@ -118,15 +120,12 @@ def game_over_menu(snake):
     
     game_window.blit(text, (score_text_x, score_text_y))
 
-    
-    
     game_window.blit(blink_button, (main_menu_button_x, main_menu_button_y))
     game_window.blit(main_menu_text, (main_menu_button_x + button_width // 2 - main_menu_text.get_width() // 2, main_menu_button_y + button_height // 2 - main_menu_text.get_height() // 2))
 
     game_window.blit(blink_button, (quit_button_x, quit_button_y))
     game_window.blit(quit_text, (quit_button_x + button_width // 2 - quit_text.get_width() // 2, quit_button_y + button_height // 2 - quit_text.get_height() // 2))
 
-    
     pygame.display.update()
 
     finish_game = False
@@ -195,8 +194,7 @@ def pause_menu():
         fps_controller.tick(30)
         
 def difficulty_menu():
-    global difficulty
-
+    difficulty = 0
     button_width = 200
     button_height = 50
     choose_difficulty_x = 290
@@ -248,11 +246,10 @@ def difficulty_menu():
                     difficulty = 35
 
         fps_controller.tick(30)
+    return difficulty
 
-
-def main():
-    show_menu()
-    snake = Snake()
+def create_game(gamemode, difficulty, training_count, reward):
+    snake = Snake(gamemode)
     grid = Grid(frame_size_x, frame_size_y)
     value_to_spawn_bomb = 5
     is_paused = False
@@ -261,7 +258,7 @@ def main():
             if event.type == pygame.QUIT:
                 game_over()
             elif event.type == pygame.KEYDOWN:
-                snake.change_direction(event)
+                snake.change_direction(event, gamemode, 0)
                 if event.key == pygame.K_p:  # Check if 'P' key is pressed
                     is_paused = True
                     if is_paused:
@@ -275,14 +272,20 @@ def main():
         snake.move()
         food_eaten = snake.grow(grid.food_pos)
         if food_eaten:
+            reward = 10
             grid.spawn_food(snake.snake_body)
             grid.increase_score(snake)
 
+        # Update UI
         grid.draw(game_window, snake.snake_body, snake.direction, snake.snake_score)
 
         if grid.check_collision(snake.snake_pos) or grid.check_self_collision(snake.snake_body):
-            game_over_menu(snake)
-            game_over()
+            if gamemode == 0:
+                game_over_menu(snake)
+                game_over()
+            else: # TODO: implement frame iteration if snake loops without no collision
+                reward = -10
+            break
 
         if snake.snake_score == value_to_spawn_bomb:
             grid.spawn_bomb(snake.snake_body)
@@ -296,7 +299,16 @@ def main():
 
         pygame.display.update()
         fps_controller.tick(difficulty)
+    
+    if gamemode == 1 and training_count < 1000: # TODO: if counter goes high above a certain number, break this too.
+        training_count += 1
+        create_game(1, difficulty, training_count, reward)
 
+def main():
+    training_count = 0
+    reward = 0
+    gamemode, difficulty = show_menu()
+    create_game(gamemode, difficulty, training_count, reward)
 
 if __name__ == "__main__":
     main()

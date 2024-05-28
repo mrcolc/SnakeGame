@@ -27,7 +27,6 @@ class Grid:
             if all(abs(x - w[0]) > 10 or abs(y - w[1]) > 10 for w in self.wall_positions):
                 self.wall_positions.append((x, y))
 
-
     def spawn_food(self, snake_body):
         self.food_pos = [random.randrange(10, (self.frame_size_x // 10) - 1) * 10,
                          random.randrange(10, (self.frame_size_y // 10) - 1) * 10]
