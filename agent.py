@@ -4,6 +4,8 @@ import numpy as np
 from collections import deque
 from snake import Snake, Direction
 from grid import Grid
+from model import QTrainer, Linear_QNet
+from plotter import plot
 
 MAX_MEMORY = 100000
 BATCH_SIZE = 1000
@@ -13,12 +15,19 @@ class Agent:
     def __init__(self, snake: Snake, grid: Grid):
         self.snake = snake # FOR GATHERING STATE SPACE VARIABLES.
         self.grid = grid # FOR CHECKING COLLISIONS AND FINDING FOOD POS.
+
         self.n_games = 0 # number of games
         self.epsilon = 0 # controls randomness
         self.gamma = 0 # discount rate
         self.memory = deque(maxlen=MAX_MEMORY) # popleft() when max length is reached
-        self.model = None # TODO
-        self.trainer = None # TODO
+
+        self.record = 0
+        self.total_score = 0
+        self.plot_scores = []
+        self.plot_mean_scores = []
+
+        self.model = Linear_QNet(11, 256, 3)
+        self.trainer = QTrainer(self.model, lr=LR, gamma=self.gamma)
 
     def get_state(self):
         head_pos = self.snake.snake_pos
@@ -94,13 +103,13 @@ class Agent:
         # Generating move: Tradeoff between exploration and exploitation.
         # Exploration: Random move
         # Exploitation: Move via model
-        self.epsilon = 80 - self.n_games
+        self.epsilon = max(50 - self.n_games // 10, 10)  # Adjust epsilon decay rate
         final_move = [0, 0, 0]
-        if random.randint(0,200) < self.epsilon:  
+        if random.randint(0,100) < self.epsilon:  
             move = random.randint(0,2) # Make random move if random number < epsilon
         else:
             state0 = torch.tensor(state, dtype=torch.float) # Make prediction via model
-            prediction = self.model.predict(state0)
+            prediction = self.model(state0)
             move = torch.argmax(prediction).item() # Turn prediction from Tensor to Int
         final_move[move] = 1
         return final_move
@@ -111,10 +120,6 @@ class Agent:
         return current_state, final_move
 
     def train(self, state_old, final_move, reward, done):
-        # plot_scores = []
-        # plot_mean_scores = []
-        total_score = 0
-        record = 0
         score = self.snake.snake_score
 
         state_next = self.get_state()
@@ -126,8 +131,14 @@ class Agent:
             self.n_games += 1
             self.train_long_memory()
 
-        if score > record:
-            record = score
-            self.model.save() # TODO: MODEL
+            if score > self.record:
+                self.record = score
+                self.model.save() # TODO: MODEL
 
-        print('Game', self.n_games, 'Score', score, 'Record:', record)
+            print('Game', self.n_games, 'Score', score, 'Record:', self.record)
+
+            self.plot_scores.append(score)
+            self.total_score += score
+            mean_score = self.total_score / self.n_games
+            self.plot_mean_scores.append(mean_score)
+            plot(self.plot_scores, self.plot_mean_scores)

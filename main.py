@@ -2,7 +2,8 @@ import pygame
 import sys
 import os
 import random
-from snake import Snake, Direction
+import numpy as np
+from snake import Snake
 from grid import Grid
 from agent import Agent
 from pygame import mixer
@@ -97,7 +98,7 @@ def show_menu():
                 elif aiDriven_button_x <= mouse_x <= aiDriven_button_x + button_width and aiDriven_button_y <= mouse_y <= aiDriven_button_y + button_height:
                     # Mode select (0 for player, 1 for AI)
                     gamemode = 1
-                    difficulty = 25
+                    difficulty = 1600
                     start_game = True
         fps_controller.tick(30)
     return gamemode, difficulty
@@ -249,13 +250,17 @@ def difficulty_menu():
         fps_controller.tick(30)
     return difficulty
 
-def create_game(gamemode, difficulty, reward, agent: Agent):
+def calculate_distance(point1, point2):
+    return np.sqrt((point1[0] - point2[0]) ** 2 + (point1[1] - point2[1]) ** 2)
+
+def create_game(gamemode, difficulty, reward, agent: Agent, training_count, self_collision_count):
     snake = Snake()
     grid = Grid(frame_size_x, frame_size_y)
     agent.snake = snake
     agent.grid = grid
     value_to_spawn_bomb = 5
     is_paused = False
+    frame_iteration = 0
 
     if gamemode == 0:
         while True:
@@ -304,7 +309,6 @@ def create_game(gamemode, difficulty, reward, agent: Agent):
             pygame.display.update()
             fps_controller.tick(difficulty)
     
-    training_count = 0
     if gamemode == 1 and training_count < 1000: # TODO: if counter goes high above a certain number, stop training.
         while True:
             for event in pygame.event.get():
@@ -325,29 +329,48 @@ def create_game(gamemode, difficulty, reward, agent: Agent):
             # This game has not finished yet.
             done = 0
 
+            old_pos = snake.snake_pos
+            food_pos = grid.food_pos
+            old_distance = calculate_distance(old_pos, food_pos)
+
             # Get move and train.
             state_current, action = agent.generate_action()
-            snake.predict_direction(action) # TODO: change 0 to action
+            snake.predict_direction(action) 
             snake.move()
-            action = agent.train(state_current, action, reward, done)
+
+            new_pos = snake.snake_pos
+            new_distance = calculate_distance(new_pos, food_pos)
 
             # Set reward back to 0 before another evaluation.
             reward = 0
 
+            if new_distance < old_distance:
+                reward += 40
+
             # Update reward for food eaten.
             food_eaten = snake.grow(grid.food_pos)
             if food_eaten:
-                reward = 10
+                reward += 50
+                frame_iteration = 0
                 grid.spawn_food(snake.snake_body)
                 grid.increase_score(snake)
+
+            agent.train(state_current, action, reward, done)
 
             # Update UI
             grid.draw(game_window, snake.snake_body, snake.direction, snake.snake_score)
 
             # Update reward for collision and end the game if collision happens.
-            if grid.check_collision(snake.snake_pos) or grid.check_self_collision(snake.snake_body):
-                # TODO: implement frame iteration if snake loops without no collision
-                reward = -10
+            if grid.check_collision(snake.snake_pos) or frame_iteration > 1000:
+                reward = -40
+                break
+
+            if grid.check_self_collision(snake.snake_body):
+                print("Bro collides with itself.")
+                self_collision_count += 1
+                reward = -35 * np.sqrt(self_collision_count)
+                if reward < -400:
+                    reward = -450
                 break
 
             # TODO: NO BOMBS FOR AI RN
@@ -363,25 +386,28 @@ def create_game(gamemode, difficulty, reward, agent: Agent):
             if snake.shrink(grid.bomb_pos):
                 grid.decrease_score(snake)
             
+            frame_iteration += 1
             pygame.display.update()
             fps_controller.tick(difficulty)
-            
+
         # Train for collision (since collision breaks the loop and ends the game)
         done = 1
         agent.train(state_current, action, reward, done)
-        create_game(1, difficulty, training_count + 1, reward)
+        create_game(gamemode, difficulty, reward, agent, training_count + 1, self_collision_count)
 
 def main():
     gamemode, difficulty = show_menu()
     
     # SETUP FOR AGENT
     if gamemode == 1:
+        training_count = 0
+        self_collision_count = 0
         snake = Snake()
         grid = Grid(frame_size_x, frame_size_y)
         agent = Agent(snake, grid)
         reward = 0
     
-    create_game(gamemode, difficulty, reward, agent)
+    create_game(gamemode, difficulty, reward, agent, training_count, self_collision_count)
 
 if __name__ == "__main__":
     main()

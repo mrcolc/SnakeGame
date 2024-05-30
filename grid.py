@@ -104,4 +104,3 @@ class Grid:
             if snake_body[0][0] == block[0] and snake_body[0][1] == block[1]:
                 return True
         return False
-

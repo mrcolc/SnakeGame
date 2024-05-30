@@ -7,7 +7,7 @@ class Snake:
         # snake_pos[0] is x pos
         # snake_pos[1] is y pos
         self.snake_pos = [100, 50]
-        self.snake_body = [[100, 50], [100 - 10, 50], [100 - (2 * 10), 50]]
+        self.snake_body = [[100, 50], [100 - 10, 50], [100 - (2 * 10), 50], [100 - (3 * 10), 50]]
         self.snake_score = 0
         # -------- STATE SPACE VARIABLES --------
         # danger zone for snake head. (left, right, below, and above of snake's head)
@@ -41,7 +41,6 @@ class Snake:
         elif np.array_equal(action, [0, 0, 1]): # LEFT: Previous direction in the clockwise list
             new_idx = (idx - 1) % 4
             self.change_to = clockwise[new_idx]
-        print("This is AI driven directions")
 
     def move(self):
         if self.change_to == Direction.UP and self.direction != Direction.DOWN:
