@@ -7,7 +7,7 @@ class Snake:
         # snake_pos[0] is x pos
         # snake_pos[1] is y pos
         self.snake_pos = [100, 50]
-        self.snake_body = [[100, 50], [100 - 10, 50], [100 - (2 * 10), 50], [100 - (3 * 10), 50]]
+        self.snake_body = [[100, 50], [100 - 10, 50], [100 - (2 * 10), 50]]
         self.snake_score = 0
         # -------- STATE SPACE VARIABLES --------
         # danger zone for snake head. (left, right, below, and above of snake's head)

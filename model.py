@@ -2,6 +2,7 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 import torch.nn.functional as F
+import numpy as np
 import os
 
 class Linear_QNet(nn.Module):
@@ -23,7 +24,6 @@ class Linear_QNet(nn.Module):
         file_name = os.path.join(model_folder_path, file_name)
         torch.save(self.state_dict(), file_name)
 
-
 class QTrainer:
     def __init__(self, model, lr, gamma):
         self.lr = lr
@@ -33,6 +33,11 @@ class QTrainer:
         self.criterion = nn.MSELoss()
 
     def train_step(self, state, action, reward, next_state, done):
+        state = np.array(state, dtype=np.float32)
+        next_state = np.array(next_state, dtype=np.float32)
+        action = np.array(action, dtype=np.int64)
+        reward = np.array(reward, dtype=np.float32)
+        
         state = torch.tensor(state, dtype=torch.float)
         next_state = torch.tensor(next_state, dtype=torch.float)
         action = torch.tensor(action, dtype=torch.long)

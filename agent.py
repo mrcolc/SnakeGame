@@ -18,7 +18,7 @@ class Agent:
 
         self.n_games = 0 # number of games
         self.epsilon = 0 # controls randomness
-        self.gamma = 0 # discount rate
+        self.gamma = 0.9 # discount rate
         self.memory = deque(maxlen=MAX_MEMORY) # popleft() when max length is reached
 
         self.record = 0
@@ -26,7 +26,7 @@ class Agent:
         self.plot_scores = []
         self.plot_mean_scores = []
 
-        self.model = Linear_QNet(11, 256, 3)
+        self.model = Linear_QNet(14, 256, 3)
         self.trainer = QTrainer(self.model, lr=LR, gamma=self.gamma)
 
     def get_state(self):
@@ -43,6 +43,12 @@ class Agent:
         dir_r = self.snake.direction == Direction.RIGHT
         dir_u = self.snake.direction == Direction.UP
         dir_d = self.snake.direction == Direction.DOWN
+
+        # Check for body parts in front, left, and right of the snake's head
+        body_left = self.is_body_part(head_l)
+        body_right = self.is_body_part(head_r)
+        body_up = self.is_body_part(head_u)
+        body_down = self.is_body_part(head_d)
 
         state = [
             # Wall straight
@@ -63,6 +69,24 @@ class Agent:
             (dir_u and self.grid.check_collision(head_l)) or
             (dir_d and self.grid.check_collision(head_r)),
 
+            # Body straight
+            (dir_r and body_right) or
+            (dir_l and body_left) or
+            (dir_u and body_up) or
+            (dir_d and body_down),
+
+            # Body right
+            (dir_r and body_down) or
+            (dir_l and body_up) or
+            (dir_u and body_right) or
+            (dir_d and body_left),
+
+            # Body left
+            (dir_r and body_up) or
+            (dir_l and body_down) or
+            (dir_u and body_left) or
+            (dir_d and body_right),
+
             # Move direction
             dir_l,
             dir_r,
@@ -80,6 +104,12 @@ class Agent:
         
         # Turn true/falses to 0/1s and return.
         return np.array(state, dtype=int)
+    
+    def is_body_part(self, position):
+        for part in self.snake.snake_body:
+            if part[0] == position[0] and part[1] == position[1]:
+                return True
+        return False
 
     def remember(self, state, action, reward, next_state, done):
         self.memory.append((state, action, reward, next_state, done))
@@ -99,13 +129,13 @@ class Agent:
         # Train over these singular values.
         self.trainer.train_step(state, action, reward, next_state, done)
 
-    def get_action(self, state):
+    def get_action(self, state, mode):
         # Generating move: Tradeoff between exploration and exploitation.
         # Exploration: Random move
         # Exploitation: Move via model
-        self.epsilon = max(50 - self.n_games // 10, 10)  # Adjust epsilon decay rate
+        self.epsilon = max(50 - self.n_games // 20, 10)  # Adjust epsilon decay rate
         final_move = [0, 0, 0]
-        if random.randint(0,100) < self.epsilon:  
+        if random.randint(0,100) < self.epsilon and mode != 1:  
             move = random.randint(0,2) # Make random move if random number < epsilon
         else:
             state0 = torch.tensor(state, dtype=torch.float) # Make prediction via model
@@ -115,9 +145,14 @@ class Agent:
         return final_move
     
     def generate_action(self):
-        current_state = self.get_state()
-        final_move = self.get_action(current_state)
-        return current_state, final_move
+        state_current = self.get_state()
+        final_move = self.get_action(state_current, 0)
+        return state_current, final_move
+    
+    def predict_action(self):
+        state_current = self.get_state()
+        final_move = self.get_action(state_current, 1)
+        return state_current, final_move
 
     def train(self, state_old, final_move, reward, done):
         score = self.snake.snake_score

@@ -3,6 +3,7 @@ import sys
 import os
 import random
 import numpy as np
+import torch
 from snake import Snake
 from grid import Grid
 from agent import Agent
@@ -67,10 +68,13 @@ def show_menu():
     play_button_y = 250
     aiDriven_button_x = 335
     aiDriven_button_y = 320
+    prediction_only_button_x = 335
+    prediction_only_button_y = 390
     
     font = pygame.font.Font('freesansbold.ttf', 30)
     play_text = font.render("Play", True, black)
-    ai_driven_text = font.render("AI Driven", True, black)
+    ai_driven_text = font.render("AI Trainer", True, black)
+    prediction_only_text = font.render("AI Player", True, black)
     
     game_window.blit(main_menu, (0, 0))
 
@@ -79,6 +83,9 @@ def show_menu():
 
     game_window.blit(blink_button, (aiDriven_button_x, aiDriven_button_y))
     game_window.blit(ai_driven_text, (aiDriven_button_x + button_width // 2 - ai_driven_text.get_width() // 2, aiDriven_button_y + button_height // 2 - ai_driven_text.get_height() // 2))
+
+    game_window.blit(blink_button, (prediction_only_button_x, prediction_only_button_y))
+    game_window.blit(prediction_only_text, (prediction_only_button_x + button_width // 2 - prediction_only_text.get_width() // 2, prediction_only_button_y + button_height // 2 - prediction_only_text.get_height() // 2))
 
     pygame.display.update()
 
@@ -99,6 +106,10 @@ def show_menu():
                     # Mode select (0 for player, 1 for AI)
                     gamemode = 1
                     difficulty = 1600
+                    start_game = True
+                elif prediction_only_button_x <= mouse_x <= prediction_only_button_x + button_width and prediction_only_button_y <= mouse_y <= prediction_only_button_y + button_height:
+                    gamemode = 2
+                    difficulty = 50  # Use a fixed difficulty for prediction only
                     start_game = True
         fps_controller.tick(30)
     return gamemode, difficulty
@@ -345,12 +356,14 @@ def create_game(gamemode, difficulty, reward, agent: Agent, training_count, self
             reward = 0
 
             if new_distance < old_distance:
-                reward += 40
+                reward += 10
+            else:
+                reward += -5
 
             # Update reward for food eaten.
             food_eaten = snake.grow(grid.food_pos)
             if food_eaten:
-                reward += 50
+                reward += 15
                 frame_iteration = 0
                 grid.spawn_food(snake.snake_body)
                 grid.increase_score(snake)
@@ -362,15 +375,17 @@ def create_game(gamemode, difficulty, reward, agent: Agent, training_count, self
 
             # Update reward for collision and end the game if collision happens.
             if grid.check_collision(snake.snake_pos) or frame_iteration > 1000:
-                reward = -40
+                reward += -10
                 break
 
             if grid.check_self_collision(snake.snake_body):
-                print("Bro collides with itself.")
                 self_collision_count += 1
+                print("Self collision: " + str(self_collision_count))
+                '''
                 reward = -35 * np.sqrt(self_collision_count)
                 if reward < -400:
-                    reward = -450
+                    reward = -450 '''
+                reward = -15
                 break
 
             # TODO: NO BOMBS FOR AI RN
@@ -395,17 +410,69 @@ def create_game(gamemode, difficulty, reward, agent: Agent, training_count, self
         agent.train(state_current, action, reward, done)
         create_game(gamemode, difficulty, reward, agent, training_count + 1, self_collision_count)
 
+    if gamemode == 2:
+        agent.model.load_state_dict(torch.load('absolute_model/absolute_model.pth'))
+        agent.model.eval()
+        
+        while True:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    game_over()
+                elif event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_p:  # Check if 'P' key is pressed
+                        is_paused = True
+                        if is_paused:
+                            pause_menu()
+                            is_paused = False
+                    if event.type == MUSIC_END:
+                        start_playlist()
+                if is_paused:
+                    continue
+                pygame.mixer.music.set_endevent(MUSIC_END)
+
+            state_current, action = agent.generate_action()
+            snake.predict_direction(action) 
+            snake.move()
+
+            # Update reward for food eaten.
+            food_eaten = snake.grow(grid.food_pos)
+            if food_eaten:
+                grid.spawn_food(snake.snake_body)
+                grid.increase_score(snake)
+
+            # Update UI
+            grid.draw(game_window, snake.snake_body, snake.direction, snake.snake_score)
+
+            # Update reward for collision and end the game if collision happens.
+            if grid.check_collision(snake.snake_pos) or grid.check_self_collision(snake.snake_body):
+                break
+
+            if snake.snake_score == value_to_spawn_bomb:
+                grid.spawn_bomb(snake.snake_body)
+                value_to_spawn_bomb += 5
+
+            if snake.snake_score == value_to_spawn_bomb - 2:
+                grid.bomb_pos[0], grid.bomb_pos[1] = -1, -1
+
+            if snake.shrink(grid.bomb_pos):
+                grid.decrease_score(snake)
+
+            pygame.display.update()
+            fps_controller.tick(difficulty)
+
+        create_game(gamemode, difficulty, reward, agent, training_count, self_collision_count)
+
 def main():
     gamemode, difficulty = show_menu()
     
     # SETUP FOR AGENT
-    if gamemode == 1:
-        training_count = 0
-        self_collision_count = 0
-        snake = Snake()
-        grid = Grid(frame_size_x, frame_size_y)
-        agent = Agent(snake, grid)
-        reward = 0
+    snake = Snake()
+    grid = Grid(frame_size_x, frame_size_y)
+    agent = Agent(snake, grid)
+    
+    reward = 0
+    training_count = 0
+    self_collision_count = 0
     
     create_game(gamemode, difficulty, reward, agent, training_count, self_collision_count)
 
