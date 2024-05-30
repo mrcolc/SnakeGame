@@ -4,6 +4,7 @@ import os
 import random
 from snake import Snake, Direction
 from grid import Grid
+from agent import Agent
 from pygame import mixer
 
 # Starting the mixer 
@@ -101,7 +102,7 @@ def show_menu():
         fps_controller.tick(30)
     return gamemode, difficulty
 
-def game_over_menu(snake):
+def game_over_menu(snake: Snake):
     button_width = 200
     button_height = 50
     score_text_x = 375
@@ -248,67 +249,139 @@ def difficulty_menu():
         fps_controller.tick(30)
     return difficulty
 
-def create_game(gamemode, difficulty, training_count, reward):
-    snake = Snake(gamemode)
+def create_game(gamemode, difficulty, reward, agent: Agent):
+    snake = Snake()
     grid = Grid(frame_size_x, frame_size_y)
+    agent.snake = snake
+    agent.grid = grid
     value_to_spawn_bomb = 5
     is_paused = False
-    while True:
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                game_over()
-            elif event.type == pygame.KEYDOWN:
-                snake.change_direction(event, gamemode, 0)
-                if event.key == pygame.K_p:  # Check if 'P' key is pressed
-                    is_paused = True
-                    if is_paused:
-                        pause_menu()
-                        is_paused = False
-            if event.type == MUSIC_END:
-                start_playlist()
-        if is_paused:
-            continue
-        pygame.mixer.music.set_endevent(MUSIC_END)
-        snake.move()
-        food_eaten = snake.grow(grid.food_pos)
-        if food_eaten:
-            reward = 10
-            grid.spawn_food(snake.snake_body)
-            grid.increase_score(snake)
 
-        # Update UI
-        grid.draw(game_window, snake.snake_body, snake.direction, snake.snake_score)
+    if gamemode == 0:
+        while True:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    game_over()
+                elif event.type == pygame.KEYDOWN:
+                    snake.change_direction(event)
+                    if event.key == pygame.K_p:  # Check if 'P' key is pressed
+                        is_paused = True
+                        if is_paused:
+                            pause_menu()
+                            is_paused = False
+                if event.type == MUSIC_END:
+                    start_playlist()
+            if is_paused:
+                continue
 
-        if grid.check_collision(snake.snake_pos) or grid.check_self_collision(snake.snake_body):
-            if gamemode == 0:
+            pygame.mixer.music.set_endevent(MUSIC_END)
+
+            snake.move()
+
+            food_eaten = snake.grow(grid.food_pos)
+            if food_eaten:
+                grid.spawn_food(snake.snake_body)
+                grid.increase_score(snake)
+
+            # Update UI
+            grid.draw(game_window, snake.snake_body, snake.direction, snake.snake_score)
+
+            if grid.check_collision(snake.snake_pos) or grid.check_self_collision(snake.snake_body):
                 game_over_menu(snake)
                 game_over()
-            else: # TODO: implement frame iteration if snake loops without no collision
-                reward = -10
-            break
+                break
 
-        if snake.snake_score == value_to_spawn_bomb:
-            grid.spawn_bomb(snake.snake_body)
-            value_to_spawn_bomb += 5
+            if snake.snake_score == value_to_spawn_bomb:
+                grid.spawn_bomb(snake.snake_body)
+                value_to_spawn_bomb += 5
 
-        if snake.snake_score == value_to_spawn_bomb - 2:
-            grid.bomb_pos[0], grid.bomb_pos[1] = -1, -1
+            if snake.snake_score == value_to_spawn_bomb - 2:
+                grid.bomb_pos[0], grid.bomb_pos[1] = -1, -1
 
-        if snake.shrink(grid.bomb_pos):
-            grid.decrease_score(snake)
+            if snake.shrink(grid.bomb_pos):
+                grid.decrease_score(snake)
 
-        pygame.display.update()
-        fps_controller.tick(difficulty)
+            pygame.display.update()
+            fps_controller.tick(difficulty)
     
-    if gamemode == 1 and training_count < 1000: # TODO: if counter goes high above a certain number, break this too.
-        training_count += 1
-        create_game(1, difficulty, training_count, reward)
+    training_count = 0
+    if gamemode == 1 and training_count < 1000: # TODO: if counter goes high above a certain number, stop training.
+        while True:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    game_over()
+                elif event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_p:  # Check if 'P' key is pressed
+                        is_paused = True
+                        if is_paused:
+                            pause_menu()
+                            is_paused = False
+                    if event.type == MUSIC_END:
+                        start_playlist()
+                if is_paused:
+                    continue
+                pygame.mixer.music.set_endevent(MUSIC_END)
+
+            # This game has not finished yet.
+            done = 0
+
+            # Get move and train.
+            state_current, action = agent.generate_action()
+            snake.predict_direction(action) # TODO: change 0 to action
+            snake.move()
+            action = agent.train(state_current, action, reward, done)
+
+            # Set reward back to 0 before another evaluation.
+            reward = 0
+
+            # Update reward for food eaten.
+            food_eaten = snake.grow(grid.food_pos)
+            if food_eaten:
+                reward = 10
+                grid.spawn_food(snake.snake_body)
+                grid.increase_score(snake)
+
+            # Update UI
+            grid.draw(game_window, snake.snake_body, snake.direction, snake.snake_score)
+
+            # Update reward for collision and end the game if collision happens.
+            if grid.check_collision(snake.snake_pos) or grid.check_self_collision(snake.snake_body):
+                # TODO: implement frame iteration if snake loops without no collision
+                reward = -10
+                break
+
+            # TODO: NO BOMBS FOR AI RN
+            '''
+            if snake.snake_score == value_to_spawn_bomb:
+                grid.spawn_bomb(snake.snake_body)
+                value_to_spawn_bomb += 5
+
+            if snake.snake_score == value_to_spawn_bomb - 2:
+                grid.bomb_pos[0], grid.bomb_pos[1] = -1, -1
+            '''
+
+            if snake.shrink(grid.bomb_pos):
+                grid.decrease_score(snake)
+            
+            pygame.display.update()
+            fps_controller.tick(difficulty)
+            
+        # Train for collision (since collision breaks the loop and ends the game)
+        done = 1
+        agent.train(state_current, action, reward, done)
+        create_game(1, difficulty, training_count + 1, reward)
 
 def main():
-    training_count = 0
-    reward = 0
     gamemode, difficulty = show_menu()
-    create_game(gamemode, difficulty, training_count, reward)
+    
+    # SETUP FOR AGENT
+    if gamemode == 1:
+        snake = Snake()
+        grid = Grid(frame_size_x, frame_size_y)
+        agent = Agent(snake, grid)
+        reward = 0
+    
+    create_game(gamemode, difficulty, reward, agent)
 
 if __name__ == "__main__":
     main()
