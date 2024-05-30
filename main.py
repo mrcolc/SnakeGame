@@ -320,7 +320,7 @@ def create_game(gamemode, difficulty, reward, agent: Agent, training_count, self
             pygame.display.update()
             fps_controller.tick(difficulty)
     
-    if gamemode == 1 and training_count < 1000: # TODO: if counter goes high above a certain number, stop training.
+    if gamemode == 1 and training_count < 1000: # if counter goes high above a certain number, stop training.
         while True:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -381,14 +381,10 @@ def create_game(gamemode, difficulty, reward, agent: Agent, training_count, self
             if grid.check_self_collision(snake.snake_body):
                 self_collision_count += 1
                 print("Self collision: " + str(self_collision_count))
-                '''
-                reward = -35 * np.sqrt(self_collision_count)
-                if reward < -400:
-                    reward = -450 '''
                 reward = -15
                 break
 
-            # TODO: NO BOMBS FOR AI RN
+            # NO BOMBS FOR AI TRAINING: THEY CONTRADICT WITH LEARNING CURVE.
             '''
             if snake.snake_score == value_to_spawn_bomb:
                 grid.spawn_bomb(snake.snake_body)
@@ -430,7 +426,7 @@ def create_game(gamemode, difficulty, reward, agent: Agent, training_count, self
                     continue
                 pygame.mixer.music.set_endevent(MUSIC_END)
 
-            state_current, action = agent.generate_action()
+            state_current, action = agent.predict_action()
             snake.predict_direction(action) 
             snake.move()
 

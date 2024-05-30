@@ -31,8 +31,7 @@ class Snake:
     def predict_direction(self, action):
         clockwise = [Direction.RIGHT, Direction.DOWN, Direction.LEFT, Direction.UP]
         idx = clockwise.index(self.direction)
-        # 35.01
-        # TODO: AI driven direction changer
+        
         if np.array_equal(action, [1, 0, 0]): # STRAIGHT: No change
             self.change_to = clockwise[idx]
         elif np.array_equal(action, [0, 1, 0]): # RIGHT: Next direction in the clockwise list 

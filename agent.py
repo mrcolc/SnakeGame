@@ -93,13 +93,11 @@ class Agent:
             dir_u,
             dir_d,
 
-            # Food location (TODO: check up and down)
+            # Food location
             food_pos[0] < head_pos[0], # Food left
             food_pos[0] > head_pos[0], # Food right
             food_pos[1] < head_pos[1], # Food up
             food_pos[1] > head_pos[1], # Food down
-
-            # TODO: Bomb location
         ]
         
         # Turn true/falses to 0/1s and return.
@@ -168,7 +166,7 @@ class Agent:
 
             if score > self.record:
                 self.record = score
-                self.model.save() # TODO: MODEL
+                self.model.save()
 
             print('Game', self.n_games, 'Score', score, 'Record:', self.record)
 
