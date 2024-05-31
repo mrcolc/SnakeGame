@@ -24,7 +24,7 @@ class Snake:
         # shows to next direction
         self.change_to = self.direction
 
-    # A method to change the direction of the snake
+    # A method to update change_to datafield of the snake
     def change_direction(self, event):
         # if arrow up or w pressed
         if event.key == pygame.K_UP or event.key == ord('w'):
