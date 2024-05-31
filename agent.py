@@ -6,6 +6,7 @@ from snake import Snake, Direction
 from grid import Grid
 from model import QTrainer, Linear_QNet
 from plotter import plot
+import os
 
 MAX_MEMORY = 100000
 BATCH_SIZE = 1000
@@ -129,9 +130,9 @@ class Agent:
 
     def get_action(self, state, mode):
         # Generating move: Tradeoff between exploration and exploitation.
-        # Exploration: Random move
-        # Exploitation: Move via model
-        self.epsilon = max(50 - self.n_games // 20, 10)  # Adjust epsilon decay rate
+        # Exploration: Random move (via epsilon function)
+        # Exploitation: Move via model prediction
+        self.epsilon = max(40 - self.n_games // 2, 8)  # Adjust epsilon decay rate
         final_move = [0, 0, 0]
         if random.randint(0,100) < self.epsilon and mode != 1:  
             move = random.randint(0,2) # Make random move if random number < epsilon

@@ -4,6 +4,7 @@ import os
 import random
 import numpy as np
 import torch
+import plotter as pt
 from snake import Snake
 from grid import Grid
 from agent import Agent
@@ -118,11 +119,12 @@ def game_over_menu(snake: Snake):
     button_width = 200
     button_height = 50
     score_text_x = 375
-    score_text_y = 250
+    score_text_y = 260
     main_menu_button_x = 335
-    main_menu_button_y = 300
+    main_menu_button_y = 310
     quit_button_x = 335
     quit_button_y = 370
+
 
     game_window.blit(game_over_menu_img, (0, 0))
 
@@ -130,7 +132,7 @@ def game_over_menu(snake: Snake):
     text = font.render("Score: " + str(snake.snake_score), True, white)  # str(snake_score)
     main_menu_text = font.render("Main Menu", True, black)
     quit_text = font.render("Quit", True, black)
-    
+
     game_window.blit(text, (score_text_x, score_text_y))
 
     game_window.blit(blink_button, (main_menu_button_x, main_menu_button_y))
@@ -272,6 +274,7 @@ def create_game(gamemode, difficulty, reward, agent: Agent, training_count, self
     value_to_spawn_bomb = 5
     is_paused = False
     frame_iteration = 0
+    high_scores = pt.record_keeper_for_user()
 
     if gamemode == 0:
         while True:
@@ -300,9 +303,10 @@ def create_game(gamemode, difficulty, reward, agent: Agent, training_count, self
                 grid.increase_score(snake)
 
             # Update UI
-            grid.draw(game_window, snake.snake_body, snake.direction, snake.snake_score)
+            grid.draw(game_window, snake.snake_body, snake.direction, snake.snake_score, high_scores, agent.record)
 
             if grid.check_collision(snake.snake_pos) or grid.check_self_collision(snake.snake_body):
+                pt.save_record(snake.snake_score)
                 game_over_menu(snake)
                 game_over()
                 break
@@ -371,7 +375,7 @@ def create_game(gamemode, difficulty, reward, agent: Agent, training_count, self
             agent.train(state_current, action, reward, done)
 
             # Update UI
-            grid.draw(game_window, snake.snake_body, snake.direction, snake.snake_score)
+            grid.draw(game_window, snake.snake_body, snake.direction, snake.snake_score, high_scores, agent.record)
 
             # Update reward for collision and end the game if collision happens.
             if grid.check_collision(snake.snake_pos) or frame_iteration > 1000:
@@ -437,7 +441,7 @@ def create_game(gamemode, difficulty, reward, agent: Agent, training_count, self
                 grid.increase_score(snake)
 
             # Update UI
-            grid.draw(game_window, snake.snake_body, snake.direction, snake.snake_score)
+            grid.draw(game_window, snake.snake_body, snake.direction, snake.snake_score, high_scores, agent.record)
 
             # Update reward for collision and end the game if collision happens.
             if grid.check_collision(snake.snake_pos) or grid.check_self_collision(snake.snake_body):

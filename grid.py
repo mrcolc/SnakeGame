@@ -54,7 +54,7 @@ class Grid:
         if self.bomb_pos == self.food_pos:
             self.spawn_bomb(snake_body)
 
-    def draw(self, game_window, snake_body, snake_direction, snake_score):
+    def draw(self, game_window, snake_body, snake_direction, snake_score, high_scores, ai_high_score):
         game_window.blit(background, (0, 0))
         for pos in self.wall_positions:
             game_window.blit(wall_image, (pos[0], pos[1]))
@@ -70,6 +70,19 @@ class Grid:
 
         score_text = font.render(str(snake_score), True, (255, 255, 255))
         game_window.blit(score_text, (785, 110))
+
+        high_scores_text = font.render("Records" , True, (255, 255, 255))
+        game_window.blit(high_scores_text, (735, 160))
+
+        high_1 = font.render(str(high_scores[0]), True, (255, 255, 255))
+        game_window.blit(high_1, (785, 190))
+        high_2 = font.render(str(high_scores[1]), True, (255, 255, 255))
+        game_window.blit(high_2, (785, 220))
+        high_3 = font.render(str(high_scores[2]), True, (255, 255, 255))
+        game_window.blit(high_3, (785, 250))
+        high_ai = font.render(str(ai_high_score), True, (255, 255, 255))
+        game_window.blit(high_ai, (785, 280))
+
         flag = 0
         for pos in snake_body:
             if flag == 0:
