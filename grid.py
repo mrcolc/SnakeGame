@@ -54,7 +54,7 @@ class Grid:
         if self.bomb_pos == self.food_pos:
             self.spawn_bomb(snake_body)
 
-    def draw(self, game_window, snake_body, snake_direction, snake_score, high_scores, ai_high_score):
+    def draw(self, game_window, snake_body, snake_direction, current_score, high_scores, ai_high_score):
         game_window.blit(background, (0, 0))
         for pos in self.wall_positions:
             game_window.blit(wall_image, (pos[0], pos[1]))
@@ -63,25 +63,35 @@ class Grid:
         game_window.blit(food, (self.food_pos[0], self.food_pos[1]))
         if self.bomb_pos[0] != -1 and self.bomb_pos[1] != -1:
             game_window.blit(bomb, (self.bomb_pos[0], self.bomb_pos[1]))
+        
         # Draw the score in the right panel
-        font = pygame.font.Font('freesansbold.ttf', 30)
-        text = font.render("Score", True, (255, 255, 255))
-        game_window.blit(text, (755, 80))
+        font = pygame.font.Font('freesansbold.ttf', 22)
+        
+        text = font.render("Score: ", True, (255, 255, 255))
+        game_window.blit(text, (740, 60))
+        score = font.render(str(current_score), True, (255, 255, 255))
+        game_window.blit(score, (815, 60))
 
-        score_text = font.render(str(snake_score), True, (255, 255, 255))
-        game_window.blit(score_text, (785, 110))
+        text = font.render("Records" , True, (255, 255, 255))
+        game_window.blit(text, (745, 110))
+        high_1 = font.render("1st: " + str(high_scores[0]), True, (255, 255, 255))
+        game_window.blit(high_1, (755, 140))
+        high_2 = font.render("2nd: " + str(high_scores[1]), True, (255, 255, 255))
+        game_window.blit(high_2, (755, 170))
+        high_3 = font.render("3rd: " + str(high_scores[2]), True, (255, 255, 255))
+        game_window.blit(high_3, (755, 200))
 
-        high_scores_text = font.render("Records" , True, (255, 255, 255))
-        game_window.blit(high_scores_text, (735, 160))
-
-        high_1 = font.render(str(high_scores[0]), True, (255, 255, 255))
-        game_window.blit(high_1, (785, 190))
-        high_2 = font.render(str(high_scores[1]), True, (255, 255, 255))
-        game_window.blit(high_2, (785, 220))
-        high_3 = font.render(str(high_scores[2]), True, (255, 255, 255))
-        game_window.blit(high_3, (785, 250))
+        text = font.render("AI Record" , True, (255, 255, 255))
+        game_window.blit(text, (740, 240))
         high_ai = font.render(str(ai_high_score), True, (255, 255, 255))
-        game_window.blit(high_ai, (785, 280))
+        game_window.blit(high_ai, (785, 270))
+
+        text = font.render("Press P", True, (255, 255, 255))
+        game_window.blit(text, (750, 310))
+        text = font.render("to pause", True, (255, 255, 255))
+        game_window.blit(text, (745, 340))
+        text = font.render("or exit", True, (255, 255, 255))
+        game_window.blit(text, (750, 370))
 
         flag = 0
         for pos in snake_body:

@@ -22,6 +22,7 @@ class Agent:
         self.gamma = 0.9 # discount rate
         self.memory = deque(maxlen=MAX_MEMORY) # popleft() when max length is reached
 
+        self.highscore = 0
         self.record = 0
         self.total_score = 0
         self.plot_scores = []

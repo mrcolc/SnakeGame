@@ -276,6 +276,7 @@ def create_game(gamemode, difficulty, reward, agent: Agent, training_count, self
     frame_iteration = 0
     high_scores = pt.record_keeper_for_user()
 
+    # Gamemode for human player.
     if gamemode == 0:
         while True:
             for event in pygame.event.get():
@@ -324,6 +325,7 @@ def create_game(gamemode, difficulty, reward, agent: Agent, training_count, self
             pygame.display.update()
             fps_controller.tick(difficulty)
     
+    # Gamemode for AI training. 
     if gamemode == 1 and training_count < 1000: # if counter goes high above a certain number, stop training.
         while True:
             for event in pygame.event.get():
@@ -388,16 +390,6 @@ def create_game(gamemode, difficulty, reward, agent: Agent, training_count, self
                 reward = -15
                 break
 
-            # NO BOMBS FOR AI TRAINING: THEY CONTRADICT WITH LEARNING CURVE.
-            '''
-            if snake.snake_score == value_to_spawn_bomb:
-                grid.spawn_bomb(snake.snake_body)
-                value_to_spawn_bomb += 5
-
-            if snake.snake_score == value_to_spawn_bomb - 2:
-                grid.bomb_pos[0], grid.bomb_pos[1] = -1, -1
-            '''
-
             if snake.shrink(grid.bomb_pos):
                 grid.decrease_score(snake)
             
@@ -410,8 +402,12 @@ def create_game(gamemode, difficulty, reward, agent: Agent, training_count, self
         agent.train(state_current, action, reward, done)
         create_game(gamemode, difficulty, reward, agent, training_count + 1, self_collision_count)
 
+    # Gamemode for AI player.
     if gamemode == 2:
-        agent.model.load_state_dict(torch.load('absolute_model/absolute_model.pth'))
+        # Loading the trained model.
+        # Model 2 is more improved than Model 1.
+        # If desired, models can be changed through the game code.
+        agent.model.load_state_dict(torch.load('absolute_model/model2.pth'))
         agent.model.eval()
         
         while True:
@@ -441,10 +437,12 @@ def create_game(gamemode, difficulty, reward, agent: Agent, training_count, self
                 grid.increase_score(snake)
 
             # Update UI
-            grid.draw(game_window, snake.snake_body, snake.direction, snake.snake_score, high_scores, agent.record)
+            grid.draw(game_window, snake.snake_body, snake.direction, snake.snake_score, high_scores, agent.highscore)
 
             # Update reward for collision and end the game if collision happens.
             if grid.check_collision(snake.snake_pos) or grid.check_self_collision(snake.snake_body):
+                if snake.snake_score > agent.highscore:
+                    agent.highscore = snake.snake_score
                 break
 
             if snake.snake_score == value_to_spawn_bomb:

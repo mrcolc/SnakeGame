@@ -20,19 +20,27 @@ def plot(scores, mean_scores):
     plt.pause(.1)
 
 def load_records():
-    if os.path.exists("record_score.txt"):
-        with open("record_score.txt", "r") as file:
+    filename = "high_scores.txt"
+    if os.path.exists(filename):
+        with open(filename, "r") as file:
             return [int(score.strip()) for score in file.readlines()]
-    return [0,0,0]
+    else:
+        with open(filename, "w") as file:
+            for x in range(2):
+                file.write(f"0\n")
+            file.write("0")
+            return [0, 0, 0]
 
 def save_record(score):
+    filename = "high_scores.txt"
     record_list = record_keeper_for_user()
     add_score = False
     for record in record_list:
         if score > record:
             add_score = True
-    with open("record_score.txt", "a") as file:
-        file.write(f"\n{score}")
+    if add_score:
+        with open(filename, "a") as file:
+            file.write(f"\n{score}")
 
 def record_keeper_for_user():
     record_list = load_records()
