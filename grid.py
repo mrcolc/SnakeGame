@@ -54,6 +54,11 @@ class Grid:
             if self.food_pos[0] == pos[0] and self.food_pos[1] == pos[1]:
                 # if it is create new random values for position of the food
                 self.spawn_food(snake_body)
+        # checking if the position of the food is the same with the bomb position
+        if self.food_pos == self.bomb_pos:
+            # if it is create new random values for position of the food
+            self.spawn_bomb(snake_body)
+
 
     # A method to create the positions of the bomb
     def spawn_bomb(self, snake_body):
