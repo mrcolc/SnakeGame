@@ -419,8 +419,11 @@ def create_game(gamemode, difficulty, reward, agent: Agent, training_count, self
                 grid.spawn_food(snake.snake_body)
                 grid.increase_score(snake)
 
-            # Update the game UI
-            grid.draw(game_window, snake.snake_body, snake.direction, snake.snake_score, high_scores, agent.record)
+            # Get highscore
+            highscore = Agent.get_highscore()
+
+            # Update UI
+            grid.draw(game_window, snake.snake_body, snake.direction, snake.snake_score, high_scores, highscore)
 
             # Check for collisions
             if grid.check_collision(snake.snake_pos) or grid.check_self_collision(snake.snake_body):
@@ -497,8 +500,11 @@ def create_game(gamemode, difficulty, reward, agent: Agent, training_count, self
 
             agent.train(state_current, action, reward, done)
 
+            # Get highscore
+            highscore = Agent.get_highscore()
+
             # Update UI
-            grid.draw(game_window, snake.snake_body, snake.direction, snake.snake_score, high_scores, agent.record)
+            grid.draw(game_window, snake.snake_body, snake.direction, snake.snake_score, high_scores, highscore)
 
             # Update reward for collision and end the game if collision happens.
             if grid.check_collision(snake.snake_pos) or frame_iteration > 1000:
@@ -557,13 +563,16 @@ def create_game(gamemode, difficulty, reward, agent: Agent, training_count, self
                 grid.spawn_food(snake.snake_body)
                 grid.increase_score(snake)
 
+            # Get highscore
+            highscore = Agent.get_highscore()
+
             # Update UI
-            grid.draw(game_window, snake.snake_body, snake.direction, snake.snake_score, high_scores, agent.highscore)
+            grid.draw(game_window, snake.snake_body, snake.direction, snake.snake_score, high_scores, highscore)
 
             # Update reward for collision and end the game if collision happens.
             if grid.check_collision(snake.snake_pos) or grid.check_self_collision(snake.snake_body):
-                if snake.snake_score > agent.highscore:
-                    agent.highscore = snake.snake_score
+                if snake.snake_score > highscore:
+                    Agent.set_highscore(snake.snake_score)
                 break
 
             if snake.snake_score == value_to_spawn_bomb:

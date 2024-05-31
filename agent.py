@@ -13,6 +13,9 @@ BATCH_SIZE = 1000   # Batch size for training
 LR = 0.001          # Learning rate
 
 class Agent:
+    # Static variable: Highscore of AI player.
+    highscore = 0 
+
     def __init__(self, snake: Snake, grid: Grid):
         """
         Initialize the Agent with a snake instance and grid instance.
@@ -30,7 +33,6 @@ class Agent:
         self.memory = deque(maxlen=MAX_MEMORY) # popleft() when max length is reached
 
         # Statistics for tracking performance
-        self.highscore = 0 # highscore of AI player.
         self.record = 0 # record of AI training algorithm.
         self.total_score = 0 # total score gained.
 
@@ -239,3 +241,9 @@ class Agent:
 
             # Plot the scores
             plot(self.plot_scores, self.plot_mean_scores)
+
+    def set_highscore(score):
+        Agent.highscore = score
+
+    def get_highscore():
+        return Agent.highscore
