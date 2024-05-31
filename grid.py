@@ -37,7 +37,7 @@ class Grid:
             if all(abs(x - w[0]) > 10 or abs(y - w[1]) > 10 for w in self.wall_positions):
                 self.wall_positions.append((x, y))
 
-    # A method to spawn the food in the grid
+    # A method to create the positions of the food
     def spawn_food(self, snake_body):
         # creating random positions for the food
         self.food_pos = [random.randrange(10, (self.frame_size_x // 10) - 1) * 10,
@@ -55,7 +55,7 @@ class Grid:
                 # if it is create new random values for position of the food
                 self.spawn_food(snake_body)
 
-    # A method to spawn the bomb on the grid
+    # A method to create the positions of the bomb
     def spawn_bomb(self, snake_body):
         # creating random position for the bomb
         self.bomb_pos = [random.randrange(10, (self.frame_size_x // 10) - 1) * 10,
@@ -78,7 +78,7 @@ class Grid:
             # if it is create new random values for position of the bomb
             self.spawn_bomb(snake_body)
 
-    # A amethod to draw the grid
+    # A method to draw the grid
     def draw(self, game_window, snake_body, snake_direction, current_score, high_scores, ai_high_score):
         # adjusting the background
         game_window.blit(background, (0, 0))
