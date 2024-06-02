@@ -55,6 +55,9 @@ pip  install matplotlib
 ```
 pip install numpy
 ```
+```
+pip install IPython
+```
 ## Usage
 -	To run:
 	-	```python main.py```
