@@ -1,4 +1,4 @@
-import torch
+import torch # Main PyTorch library
 import random
 import numpy as np
 from collections import deque
@@ -17,10 +17,10 @@ class Agent:
     highscore = 0 
 
     def __init__(self, snake: Snake, grid: Grid):
-        """
+        '''
         Initialize the Agent with a snake instance and grid instance.
         Sets up the Q-network, trainer, and various parameters for training.
-        """
+        '''
         self.snake = snake # for finding snake head position, body position direction etc.
         self.grid = grid # for collision checking and food positions.
 
@@ -42,10 +42,11 @@ class Agent:
 
         # Initialize Deep Q Network (14 input state, 256 hidden state, 3 output action)
         # Input states further explained below in get_state()
-        # Output (action) states:
-        # Go straight = [1, 0, 0]
-        # Turn right  = [0, 1, 0]
-        # Turn left   = [0, 0, 1]
+        ''' Output (action) states:
+        Go straight = [1, 0, 0]
+        Turn right  = [0, 1, 0]
+        Turn left   = [0, 0, 1]
+        '''
         self.model = Linear_QNet(14, 256, 3)
         # Initialize Q Trainer (used in training the AI using LR and gamma values)
         self.trainer = QTrainer(self.model, lr=LR, gamma=self.gamma)
@@ -75,21 +76,23 @@ class Agent:
         body_up = self.is_body_part(head_u)
         body_down = self.is_body_part(head_d)
 
-        # State representation (14 inputs):
-        # 1. Is there wall in front
-        # 2. Is there wall at right
-        # 3. Is there wall at left
-        # 4. Is there part of body in front
-        # 5. Is there part of body at right
-        # 6. Is there part of body at left
-        # 7. Is the direction left
-        # 8. Is the direction right
-        # 9. Is the direction up
-        # 10. Is the direction down
-        # 11. Is there food at left
-        # 12. Is there food at right
-        # 13. Is there food above
-        # 14. Is there food below
+        '''
+        State representation (14 inputs):
+        1. Is there wall in front
+        2. Is there wall at right
+        3. Is there wall at left
+        4. Is there part of body in front
+        5. Is there part of body at right
+        6. Is there part of body at left
+        7. Is the direction left
+        8. Is the direction right
+        9. Is the direction up
+        10. Is the direction down
+        11. Is there food at left
+        12. Is there food at right
+        13. Is there food above
+        14. Is there food below
+        '''
 
         state = [
             # Wall straight
@@ -186,9 +189,24 @@ class Agent:
         else:
             # Exploitation: Move via model prediction
             # Convert the state array to a PyTorch tensor of type float
+            '''
+            Tensor: Multi-dimensional array of numerical values. 
+            It is a generalization of 
+            scalars (0-dimensional), 
+            vectors (1-dimensional), 
+            matrices (2-dimensional) to higher dimensions.
+            '''
             state0 = torch.tensor(state, dtype=torch.float) 
+
             # Pass the state tensor through the Q-network to get predicted Q-values for each action
+            # Implicitly calls model.forward(state0)
+            '''
+            SIMPLIFIED:
+            def __call__(self, *input, **kwargs):
+                return self.forward(*input, **kwargs)
+            '''
             prediction = self.model(state0)
+
             # Select the action with the highest Q-value (index of the max value) and convert it to an integer
             move = torch.argmax(prediction).item() # Turn prediction from Tensor to Int
 

@@ -5,14 +5,15 @@ import torch.nn.functional as F # Functional module containing activation functi
 import numpy as np
 import os
 
+# Neural Networks are used to approximate the Q-value function.
 class Linear_QNet(nn.Module):
     def __init__(self, input_size, hidden_size, output_size):
-        """
+        '''
         Initialize the linear layers for the Q-network.
             input_size (int): Number of input features.
             hidden_size (int): Number of neurons in the hidden layer.
             output_size (int): Number of output actions.
-        """
+        '''
         # Call the constructor of the parent class (nn.Module)
         super().__init__()
         # Define the first linear layer (input to hidden)
@@ -21,12 +22,14 @@ class Linear_QNet(nn.Module):
         self.linear2 = nn.Linear(hidden_size, output_size)
 
     # Forward pass defines how data flows through the network.
-    # Define the forward pass through the network.
+    # Override
     def forward(self, tensor):
-        # Apply ReLU activation to the first layer
+        # self.linear1(tensor): Computes the weighted sum of inputs plus bias for the first linear layer.
+        # Apply ReLU activation to the first layer to introduce non-linearity.
         tensor = F.relu(self.linear1(tensor))
-        # Apply the second linear layer
-        tensor = self.linear2(tensor) 
+        # Computes the weighted sum of the hidden layer's outputs plus bias for the second linear layer.
+        tensor = self.linear2(tensor)
+        # Output: Final Q-values
         return tensor
 
     # Save the model parameters to a file.
@@ -41,12 +44,12 @@ class Linear_QNet(nn.Module):
 
 class QTrainer:
     def __init__(self, model, lr, gamma):
-        """
+        '''
         Initialize the Q-learning trainer with the model, learning rate, and discount rate.
             model (nn.Module): The Q-network model.
             lr (float): Learning rate.
             gamma (float): Discount rate.
-        """
+        '''
         self.lr = lr
         self.gamma = gamma
         self.model = model
