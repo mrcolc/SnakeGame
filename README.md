@@ -17,6 +17,7 @@ Traditional Snake Game, improved with different gameplay mechanics and implement
 		- Pygame
 		- Pytorch
 		- Matplotlib
+  		- IPython	
 - The game provides:
 
 	- Hand drawn pixel images.
