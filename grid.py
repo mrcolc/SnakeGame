@@ -59,7 +59,6 @@ class Grid:
             # if it is create new random values for position of the food
             self.spawn_bomb(snake_body)
 
-
     # A method to create the positions of the bomb
     def spawn_bomb(self, snake_body):
         # creating random position for the bomb
@@ -148,7 +147,7 @@ class Grid:
                     case 'RIGHT':
                         # if it is right, rotate the snake head -90 degrees and draw
                         game_window.blit(pygame.transform.rotate(snakes_head, -90), (pos[0], pos[1]))
-                flag = 1 # setting flag to 1, that means snake head is drawn
+                flag = 1  # setting flag to 1, that means snake head is drawn
             else:
                 # draw the snake body
                 game_window.blit(snakes_body, (pos[0], pos[1]))
